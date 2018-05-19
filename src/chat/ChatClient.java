@@ -42,7 +42,7 @@ public class ChatClient
         {
             Socket socket = new Socket(adresaServer, portServer);
             //daca am ajuns aici, ne-am conectat cu success la server
-            //instantiem un fir de citire
+            //instantiem un firele de citire si scriere
             new FirCitire(socket).start();
             new FirScriere(socket).start();
         }
@@ -102,6 +102,7 @@ public class ChatClient
                 while (true)
                 {
                     String response = in.readLine();
+                    
                     System.out.println("\n" + response);
                     if (response.startsWith("STOP"))
                         break;
