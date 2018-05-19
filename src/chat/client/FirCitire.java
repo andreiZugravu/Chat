@@ -3,11 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package chat;
+package chat.client;
 
-import java.io.PrintWriter;
+import chat.client.ChatClient;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.Socket;
-import java.util.Scanner;
 
 /**
  *
@@ -15,12 +16,12 @@ import java.util.Scanner;
  */
 //clasa interna prin care clientul citeste datele primite de la server,
     //folosind un fir de executare separat
-    public class FirScriere extends Thread 
+    public class FirCitire extends Thread 
     {
         private Socket socket;
-        private PrintWriter out;
+        private BufferedReader in;
 
-        public FirScriere(Socket socket)
+        public FirCitire(Socket socket)
         {
             this.socket = socket;
         }
@@ -35,33 +36,27 @@ import java.util.Scanner;
         {
             try
             {
-                //se creeaza fluxurile de comunicare cu clientul, partea de scriere
-                out = new PrintWriter(socket.getOutputStream() , true);
+                //se creeaza fluxurile de comunicare cu clientul, partea de citire
+                in =  new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 
-                Scanner sc = new Scanner (System.in);
- 
-                //System.out.println("\nusername : ");
-                String userName;
-                //do {
-                    userName = sc.nextLine();
-                    ChatClient.setUserName(userName);
-                    out.println(userName);
-                //}
-                //while(!ChatClient.isNameAccepted());
-                String text;
-
-                do {
-                    text = sc.nextLine();
-                    out.println(text);
-
-                } while (!text.equals("STOP_CHAT"));
-
-                //try {
-                    socket.close(); //o prindem mai jos
-                //} catch (IOException ex) {
-
-                    //System.out.println("Error writing to server: " + ex.getMessage());
-                //}
+                //4. server-ul preia mesajele clientului si le transmite tuturor celorlalti clienti 
+                while (true)
+                {
+                    String response = in.readLine();
+                    
+                    System.out.println("\n" + response);
+                    if (response.startsWith("STOP"))
+                        break;
+                        
+                    //if(!response.equals("Nume utilizator?"))
+                        //ChatClient.nameAccepted();
+                    
+                    // prints the username after displaying the server's message
+                    //asta ajuta la claritate
+                    if (ChatClient.getUserName() != null) {
+                        System.out.print("[" + ChatClient.getUserName() + "]: ");
+                    }
+                }
             }
             catch (Exception ex)
             {
