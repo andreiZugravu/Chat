@@ -13,6 +13,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  *
@@ -37,9 +39,21 @@ import java.util.HashMap;
         private static final String ANSI_CYAN = "\u001B[36m";
         private static final String ANSI_WHITE = "\u001B[37m";
 
+        private List<Observer> observers = new ArrayList<Observer>();
+        
         public FirUtilizator(Socket socket)
         {
             this.socket = socket;
+        }
+        
+        PrintWriter getOutputStream()
+        {
+            return out;
+        }
+        
+        String getUserName()
+        {
+            return nume;
         }
 
         //actiunile efectuate de server in momentul in care un client se conecteaza:
@@ -76,6 +90,9 @@ import java.util.HashMap;
 
                 //2. server-ul comunica clientului faptul ca a fost acceptat numele respectiv
                 out.println("Nume acceptat!");
+                
+                //notify observers that a new user has entered the system
+                this.notifyUserNew();
                 
                 //3. server-ul inregistreaza clientul
                 //fluxuriCatreUtilizatori.add(out);
@@ -130,6 +147,9 @@ import java.util.HashMap;
                 
                 System.out.println("Utilizatorul " + nume + " s-a deconectat de la server!");
                 
+                //notify observers that the user has left the system
+                this.notifyUserLeft();
+                
                 if (nume != null && out != null)
                 {
                     fluxuriAsociate.remove(nume, out);
@@ -147,6 +167,24 @@ import java.util.HashMap;
                 {
                     //System.out.println(ex);
                 }
+            }
+        }
+        
+        public void attach(Observer observer) {
+            observers.add(observer);
+        }
+        
+        public void notifyUserNew() {
+            for(Observer observer : observers) {
+                if(observer instanceof ObserverUserNew)
+                    observer.update();
+            }
+        }
+        
+        public void notifyUserLeft() {
+            for(Observer observer : observers) {
+                if(observer instanceof ObserverUserLeft)
+                    observer.update();
             }
         }
     }

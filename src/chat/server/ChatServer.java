@@ -48,7 +48,10 @@ public class ChatServer
             while (true)
             {
                Socket cs = ServerChat.accept();
-               new FirUtilizator(cs).start();
+               FirUtilizator fu = new FirUtilizator(cs);
+               new ObserverUserNew(fu);
+               new ObserverUserLeft(fu);
+               fu.start();
             }
         }
     }
