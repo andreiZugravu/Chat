@@ -39,12 +39,46 @@ import java.net.Socket;
                 //se creeaza fluxurile de comunicare cu clientul, partea de citire
                 in =  new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 
-                //4. server-ul preia mesajele clientului si le transmite tuturor celorlalti clienti 
+                //4. server-ul preia mesajele clientului si le transmite tuturor celorlalti clienti
+                int MAX_OUTPUT_LENGTH = 50;
                 while (true)
                 {
                     String response = in.readLine();
                     
-                    System.out.println("\n" + response);
+                    if(response.contains("Choose a username"))
+                        response = response.replaceAll("\n", "").replaceAll("\r", "");
+                    else if(response.contains("Current users"))
+                    {
+                        String[] userNames = response.split(", ");
+                        String output = "";
+                        boolean lastAddedEndLine = false;
+                        boolean atLeastOnce = false;
+                        int len = 0;
+                        for(int i = 0 ; i < userNames.length ; i++)
+                        {
+                            output = output + userNames[i] + ", ";
+                            len = len + userNames[i].length() + 2;
+                            if(len > MAX_OUTPUT_LENGTH)
+                            {
+                                len = len - 50;
+                                output = output + "\n";
+                                lastAddedEndLine = true;
+                                atLeastOnce = true;
+                            }
+                            else
+                                lastAddedEndLine = false;
+                        }
+                        
+                        output = output.substring(0, output.length() - 2);
+                        
+                        if(lastAddedEndLine == false || atLeastOnce == false)
+                            output = output + "\n";
+                        response = output;
+                    }
+                    else
+                        response = response + "\n";
+                    
+                    System.out.print("\n" + response);
                     if (response.startsWith("STOP"))
                         break;
                         
@@ -60,7 +94,7 @@ import java.net.Socket;
             }
             catch (Exception ex)
             {
-                System.out.println(ex);
+                //System.out.println(ex);
             }
             finally
             {

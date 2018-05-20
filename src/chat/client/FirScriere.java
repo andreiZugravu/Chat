@@ -53,9 +53,10 @@ import java.util.Scanner;
 
                 do {
                     text = sc.nextLine();
+                    System.out.print("[" + userName + "]: ");
                     out.println(text);
 
-                } while (!text.equals("STOP_CHAT"));
+                } while (!text.equals("/stop"));
 
                 //try {
                     socket.close(); //o prindem mai jos

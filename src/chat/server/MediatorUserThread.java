@@ -66,7 +66,7 @@ import java.util.Random;
                 //1. server-ul solicita clientului un nume pana cand acesta trimite unul neutilizat in acel moment
                 while (true)
                 {
-                    out.println("Nume utilizator? : ");
+                    out.println("Choose a username : ");
                     
                     nume = in.readLine();
                     synchronized(this)
@@ -81,7 +81,7 @@ import java.util.Random;
                 }
 
                 //2. server-ul comunica clientului faptul ca a fost acceptat numele respectiv
-                out.println("Nume acceptat!");
+                out.println("Username accepted!");
                 
                 //notify observers that a new user has entered the system
                 this.notifyUserNew();
@@ -98,10 +98,14 @@ import java.util.Random;
                 while (true)
                 {
                     String input = in.readLine();
-                    if (input.equals("STOP_CHAT"))
+                    if (input.equals("/stop"))
                         break;
                         
-                    if(input.charAt(0) == '/' && input.contains(" ")) //este posibil sa vrea sa trimita unui user
+                    if(input.equals("/users"))
+                    {
+                        this.showUsers();
+                    }
+                    else if(input.charAt(0) == '/' && input.contains(" ")) //este posibil sa vrea sa trimita unui user
                     {
                         String firstWord = input.substring(1, input.indexOf(" ")); //1 ca sa scapam de '/'
                         if(fluxuriAsociate.containsKey(firstWord)) //daca user-ul exista, trimite mesaj acelui user
@@ -123,14 +127,14 @@ import java.util.Random;
             }
             catch (Exception ex)
             {
-                System.out.println(ex);
+                //System.out.println(ex);
             }
             finally
             {
                 //clientul s-a deconectat, deci trebuie sa fie eliminat 
                 //din lista clientilor activi
                 
-                System.out.println("Utilizatorul " + nume + " s-a deconectat de la server!");
+                System.out.println("Utilizatorul " + nume + " s-a deconectat de la server!\n");
                 
                 //notify observers that the user has left the system
                 this.notifyUserLeft();
@@ -207,6 +211,25 @@ import java.util.Random;
         public void sendError(String error) {
             synchronized(this) {
                 out.println(error);
+            }
+        }
+        
+        public void showUsers()
+        {
+            HashMap<String, PrintWriter> fluxuriAsociate = ChatServer.getFluxuriAsociate();
+            String message = "Current users : ";
+            int contor = 0;
+            int MAX_NR_PER_LINE = 5;
+            boolean lastEndline = false;
+            for(HashMap.Entry<String, PrintWriter> pw : fluxuriAsociate.entrySet())
+            {
+                message = message + pw.getKey() + ", ";
+            }
+            
+            message = message.substring(0, message.length() - 2);
+            
+            synchronized(this) {
+                out.println(message);
             }
         }
     }

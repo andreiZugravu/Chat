@@ -35,7 +35,6 @@ public class ChatServer
         
     private static HashMap<PrivateChatKey, String> privateChatColours = new HashMap<PrivateChatKey, String>();
     private static ArrayList<String> colours = new ArrayList<String>(Arrays.asList(
-            ANSI_BLACK,
             ANSI_RED,
             ANSI_GREEN,
             ANSI_YELLOW,
