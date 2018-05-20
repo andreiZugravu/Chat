@@ -110,14 +110,12 @@ import java.util.ArrayList;
                     if (input.equals("STOP_CHAT"))
                         break;
                         
-                    boolean sentToSpecificUser = false;
                     if(input.charAt(0) == '/' && input.contains(" ")) //este posibil sa vrea sa trimita unui user
                     {
                         String firstWord = input.substring(1, input.indexOf(" ")); //1 ca sa scapam de '/'
                         if(fluxuriAsociate.containsKey(firstWord)) //daca user-ul exista, trimite mesaj acelui user
                         {
                             //trimite mesaj doar acelui user
-                            sentToSpecificUser = true;
                             String restOfMessage = input.substring(input.indexOf(" ") + 1, input.length());
                             this.sendToUser(firstWord, restOfMessage);
                         }
@@ -126,8 +124,7 @@ import java.util.ArrayList;
                             this.sendError("User " + firstWord + " does not exist!");
                         }
                     }
-
-                    if(!sentToSpecificUser)
+                    else
                     {
                         this.broadcastMessage(input);
                     }
