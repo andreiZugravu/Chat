@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  *
@@ -26,16 +27,6 @@ import java.util.ArrayList;
         private Socket socket;
         private BufferedReader in;
         private PrintWriter out;
-
-        private static final String ANSI_RESET = "\u001B[0m";
-        private static final String ANSI_BLACK = "\u001B[30m";
-        private static final String ANSI_RED = "\u001B[31m";
-        private static final String ANSI_GREEN = "\u001B[32m";
-        private static final String ANSI_YELLOW = "\u001B[33m";
-        private static final String ANSI_BLUE = "\u001B[34m";
-        private static final String ANSI_PURPLE = "\u001B[35m";
-        private static final String ANSI_CYAN = "\u001B[36m";
-        private static final String ANSI_WHITE = "\u001B[37m";
 
         private List<Observer> observers = new ArrayList<Observer>();
         
@@ -193,8 +184,23 @@ import java.util.ArrayList;
         
         public void sendToUser(String userName, String message) {
             HashMap<String, PrintWriter> fluxuriAsociate = ChatServer.getFluxuriAsociate();
+            HashMap<PrivateChatKey, String> privateChatColours = ChatServer.getPrivateChatColours();
+            
+            String ANSI_RESET = ChatServer.getAnsiReset();
+            PrivateChatKey key = new PrivateChatKey(userName, nume);
+            if(!privateChatColours.containsKey(key))
+            {
+                ArrayList<String> colours = ChatServer.getColours();
+                Random rand = new Random();
+                int index = rand.nextInt(colours.size());
+                String colour = colours.get(index);
+                privateChatColours.put(key, colour);
+                
+            }
+            String ANSI_COLOUR = privateChatColours.get(key);
+            
             synchronized(this) {
-                fluxuriAsociate.get(userName).println(ANSI_RED + "[" + nume + "] whispers: " + message + ANSI_RESET);
+                fluxuriAsociate.get(userName).println(ANSI_COLOUR + "[" + nume + "] whispers: " + message + ANSI_RESET);
             }
         }
         
