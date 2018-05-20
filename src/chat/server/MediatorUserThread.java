@@ -5,13 +5,11 @@
  */
 package chat.server;
 
-import chat.server.ChatServer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -22,7 +20,7 @@ import java.util.ArrayList;
  */
 //clasa interna prin care server-ul realizeaza conexiunea cu un client,
     //folosind un fir de executare separat
-    public class FirUtilizator extends Thread 
+    public class MediatorUserThread extends Thread 
     {
         private String nume;
         private Socket socket;
@@ -41,9 +39,12 @@ import java.util.ArrayList;
 
         private List<Observer> observers = new ArrayList<Observer>();
         
-        public FirUtilizator(Socket socket)
+        public MediatorUserThread(Socket socket)
         {
             this.socket = socket;
+            //ii atasez 2 observeri care anunta cand un user intra in sistem si cand iese
+            new ObserverUserNew(this);
+            new ObserverUserLeft(this);
         }
         
         PrintWriter getOutputStream()
@@ -109,30 +110,26 @@ import java.util.ArrayList;
                     if (input.equals("STOP_CHAT"))
                         break;
                         
-                    synchronized(this)
+                    boolean sentToSpecificUser = false;
+                    if(input.charAt(0) == '/' && input.contains(" ")) //este posibil sa vrea sa trimita unui user
                     {
-                        boolean sentToSpecificUser = false;
-                        if(input.charAt(0) == '/') //este posibil sa vrea sa trimita unui user
+                        String firstWord = input.substring(1, input.indexOf(" ")); //1 ca sa scapam de '/'
+                        if(fluxuriAsociate.containsKey(firstWord)) //daca user-ul exista, trimite mesaj acelui user
                         {
-                            if(input.contains(" "))
-                            {
-                                String firstWord = input.substring(1, input.indexOf(" ")); //1 ca sa scapam de '/'
-                                if(fluxuriAsociate.containsKey(firstWord))
-                                {
-                                    //trimite mesaj doar acelui user
-                                    sentToSpecificUser = true;
-                                    String restOfMessage = input.substring(input.indexOf(" ") + 1, input.length());
-                                    fluxuriAsociate.get(firstWord).println(ANSI_RED + "[" + nume + "] whispers: " + restOfMessage + ANSI_RESET);
-                                }
-                            }
+                            //trimite mesaj doar acelui user
+                            sentToSpecificUser = true;
+                            String restOfMessage = input.substring(input.indexOf(" ") + 1, input.length());
+                            this.sendToUser(firstWord, restOfMessage);
                         }
-                        
-                        if(!sentToSpecificUser)
+                        else //nu exista acel user, trimit inapoi eroare user-ului
                         {
-                            for(HashMap.Entry<String, PrintWriter> pw : fluxuriAsociate.entrySet())
-                                if(pw.getValue() != out)
-                                    pw.getValue().println("[" + nume + "]: " + input);
+                            this.sendError("User " + firstWord + " does not exist!");
                         }
+                    }
+
+                    if(!sentToSpecificUser)
+                    {
+                        this.broadcastMessage(input);
                     }
                 }
             }
@@ -185,6 +182,28 @@ import java.util.ArrayList;
             for(Observer observer : observers) {
                 if(observer instanceof ObserverUserLeft)
                     observer.update();
+            }
+        }
+        
+        public void broadcastMessage(String message) {
+            HashMap<String, PrintWriter> fluxuriAsociate = ChatServer.getFluxuriAsociate();
+            synchronized(this) {
+                for(HashMap.Entry<String, PrintWriter> pw : fluxuriAsociate.entrySet())
+                    if(pw.getValue() != out)
+                        pw.getValue().println("[" + nume + "]: " + message);
+            }
+        }
+        
+        public void sendToUser(String userName, String message) {
+            HashMap<String, PrintWriter> fluxuriAsociate = ChatServer.getFluxuriAsociate();
+            synchronized(this) {
+                fluxuriAsociate.get(userName).println(ANSI_RED + "[" + nume + "] whispers: " + message + ANSI_RESET);
+            }
+        }
+        
+        public void sendError(String error) {
+            synchronized(this) {
+                out.println(error);
             }
         }
     }

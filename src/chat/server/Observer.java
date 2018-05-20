@@ -10,6 +10,6 @@ package chat.server;
  * @author azusr16
  */
 public abstract class Observer {
-    protected FirUtilizator subject;
+    protected MediatorUserThread subject;
     public abstract void update();
 }

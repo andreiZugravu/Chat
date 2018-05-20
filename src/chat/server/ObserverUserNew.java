@@ -13,7 +13,7 @@ import java.util.HashMap;
  * @author azusr16
  */
 public class ObserverUserNew extends Observer {
-    public ObserverUserNew(FirUtilizator subject) {
+    public ObserverUserNew(MediatorUserThread subject) {
         this.subject = subject;
         this.subject.attach(this);
     }

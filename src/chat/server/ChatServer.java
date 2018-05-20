@@ -9,13 +9,9 @@ package chat.server;
  *
  * @author azusr16
  */
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashSet;
 import java.util.HashMap;
 
 public class ChatServer
@@ -24,16 +20,6 @@ public class ChatServer
     //port-ul server-ului
     private static final int PORT = 9999;
 
-    //multimea numelor clientilor activi, pastrata sub forma unui HashSet 
-    //deoarece numele acestora trebuie sa fie unice si 
-    //pentru a verifica rapid daca un anumit nume este disponibil sau nu
-    private static HashSet<String> numeUtilizatori = new HashSet<String>();
-
-    //multimea fluxurilor de iesire ale server-ului catre clienti, 
-    //folosita pentru a transmite mai usor un mesaj catre toti clientii
-    private static HashSet<PrintWriter> fluxuriCatreUtilizatori = new HashSet<PrintWriter>();
-    
-    //asociere nume utilizator - hashset
     private static HashMap<String, PrintWriter> fluxuriAsociate = new HashMap<String, PrintWriter>();
 
     public static void main(String[] args) throws Exception
@@ -47,10 +33,11 @@ public class ChatServer
             //creeaza o conexiune cu acesta pe un fir de executare separat
             while (true)
             {
+               //astept conexiune
                Socket cs = ServerChat.accept();
-               FirUtilizator fu = new FirUtilizator(cs);
-               new ObserverUserNew(fu);
-               new ObserverUserLeft(fu);
+               //am stabilit o conexiune, instantiez un mediator care se ocupe de primirea si transmiterea mesajelor
+               MediatorUserThread fu = new MediatorUserThread(cs);
+               //pornesc thread-ul
                fu.start();
             }
         }
